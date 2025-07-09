@@ -55,9 +55,9 @@ $ python recon_engine.py -d example.com
 
 ### 📸 Cuplikan Penggunaan
 
-![Recon Sample](docs/images/image-1.png)
-![Recon Sample 2](docs/images/image-2.png)
-![Installer Output](docs/images/image-3.png)
+![Recon Sample](/images/image-1.png)
+![Recon Sample 2](/images/image-2.png)
+![Installer Output](/images/image-3.png)
 
 ### Scan Multiple Domains
 
