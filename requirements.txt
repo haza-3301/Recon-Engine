@@ -1,0 +1,4 @@
+httpx>=0.28.1
+filelock>=3.18.0
+dnspython>=2.7.0
+rich>=14.0.0
