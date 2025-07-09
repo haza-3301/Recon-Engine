@@ -1,5 +1,12 @@
 # Recon Engine
 
+![Build](https://img.shields.io/badge/test-passing-brightgreen)
+![Stars](https://img.shields.io/github/stars/haza-3301/Recon-Engine/?style=social)
+![Last Update](https://img.shields.io/github/last-commit/haza-3301/Recon-Engine/)
+![Issues](https://img.shields.io/github/issues/haza-3301/Recon-Engine/)
+![License](https://img.shields.io/github/license/haza-3301/Recon-Engine/)
+
+
 > **Reliability & Hardening Edition v6.8**
 > Fast, modular, and extensible subdomain enumeration engine for bug bounty hunters and pentesters.
 
