@@ -1,0 +1,25 @@
+name: Python Security Audit
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'  # Setiap Senin jam 10 pagi (WIB)
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install pip-audit
+      run: pip install pip-audit
+
+    - name: Run pip-audit
+      run: pip-audit

@@ -1,151 +1,156 @@
-# Recon Engine
+# Recon Engine v8.0 🚀
 
-[![Build](https://img.shields.io/badge/test-passing-brightgreen)](https://github.com/haza-3301/Recon-Engine/actions)
-[![Last Commit](https://img.shields.io/github/last-commit/haza-3301/Recon-Engine)](https://github.com/haza-3301/Recon-Engine/commits/main)
-[![Stars](https://img.shields.io/github/stars/haza-3301/Recon-Engine?style=social)](https://github.com/haza-3301/Recon-Engine/stargazers)
-
-[![Open Issues](https://img.shields.io/github/issues/haza-3301/Recon-Engine)](https://github.com/haza-3301/Recon-Engine/issues)
-[![License](https://img.shields.io/github/license/haza-3301/Recon-Engine)](LICENSE)
-
-> **Reliability & Hardening Edition v6.8**
-> Fast, modular, and extensible subdomain enumeration engine for bug bounty hunters and pentesters.
+&#x20;&#x20;
 
 ---
 
-## 🚀 Overview
-
-**Recon Engine** is a powerful, asynchronous, and plugin-based subdomain enumeration tool. Designed for high reliability, real-world reconnaissance, and flexible integration, it supports both API and CLI-based plugins, caching, live progress UI, and robust output management.
+**Recon Engine** adalah kerangka kerja enumerasi subdomain modular, cepat, dan dapat diperluas. Dirancang untuk efisiensi dan fleksibilitas, Recon Engine dapat menjalankan berbagai plugin API dan tool eksternal secara asinkron untuk mengumpulkan subdomain, memperkaya hasil dengan resolusi IP dan ASN, serta menghasilkan output dalam format standar industri seperti Nmap, Burp Suite, dan laporan HTML.
 
 ---
 
-## ✨ Features
+## 🔥 Fitur Unggulan
 
-* 🔌 **Plugin System**: Supports API and tool-based plugins (`plugins/api/`, `plugins/tools/`)
-* ⚡ **Async + Threaded**: Combines asyncio + threading for max performance
-* 📦 **Caching**: Encrypted result caching with validation & locking
-* 🧪 **Validation**: Strict DNS & format validation to ensure clean results
-* 🖥️ **Rich UI**: Beautiful CLI interface with live progress (Rich-powered)
-* 📤 **Output Options**: Save to `.txt`, `.json`, `.csv` formats
-* 🛠️ **Resilient**: Retry mechanism, timeout controls, and fault-tolerant by design
+* **Eksekusi Asinkron Penuh** menggunakan `asyncio`
+* **Sistem Plugin Modular**: Tambahkan plugin API atau tools eksternal tanpa ubah core
+* **Resolusi IP & ASN Lookup**:
 
----
+  * `--resolve-ip`: Resolusi DNS dengan `dns.asyncresolver`
+  * `--asn-lookup`: ASN & info organisasi via `ipinfo.io`, `ip-api.com`, atau `bgp.tools`
+* **Ekspor Format Pentest**:
 
-## 🛠 Requirements
-
-* Python 3.8+
-* Dependencies (auto-installed via `pip install -r requirements.txt`):
-
-  * `httpx`, `rich`, `filelock`, `dnspython`
+  * `.txt`, `.csv`, `.json`, `.gnmap`, `.burp`, dan `.html`
+* **Laporan HTML Profesional** dengan `Jinja2`
+* **Cache Cerdas** dengan validasi checksum
+* **UI CLI Interaktif** (menggunakan `rich`)
+* **Keamanan Output Path** dan validasi domain ketat
 
 ---
 
-## 🔧 Installation
+## 📁 Struktur Proyek
+
+```
+recon_engine/
+├── main.py
+├── requirements.txt
+├── README.md
+├── core/
+│   ├── error_handler.py
+│   ├── ip_resolver.py
+│   ├── output_writer.py
+│   ├── plugin_loader.py
+│   ├── report_generator.py
+│   └── utils.py
+├── plugins/
+│   ├── api/
+│   │   └── example_api.py
+│   └── tools/
+│       └── example_tool.py
+├── templates/
+│   └── report.html.j2
+└── ui/
+    └── live_progress.py
+```
+
+---
+
+## 🚀 Instalasi
 
 ```bash
-# Clone the repository
-$ git clone https://github.com/Haza-3301/Recon-Engine.git
-$ cd Recon-Engine
+# 1. Clone repositori
+$ git clone https://github.com/user/recon-engine.git
+$ cd recon-engine
 
-# Install dependencies
+# 2. Aktifkan virtual environment (disarankan)
+$ python3 -m venv venv
+$ source venv/bin/activate
+# Windows: venv\Scripts\activate
+
+# 3. Install dependensi
 $ pip install -r requirements.txt
 ```
 
 ---
 
-## 🧪 Usage
-
-### Basic Recon
+## 🔧 Penggunaan Dasar
 
 ```bash
-$ python recon_engine.py -d example.com
-```
+# Pemindaian domain sederhana
+$ python3 main.py -d example.com
 
-### 📸 Cuplikan Penggunaan
+# Resolusi IP dan ASN
+$ python3 main.py -d example.com --resolve-ip --asn-lookup
 
-![Recon Sample](/images/image-1.png)
+# Ekspor hasil
+$ python3 main.py -d example.com -o result.txt       # Plain text
+$ python3 main.py -d example.com -o result.csv       # CSV
+$ python3 main.py -d example.com -o result.json      # JSON
+$ python3 main.py -d example.com -o targets.gnmap    # Format Nmap
+$ python3 main.py -d example.com -o scope.burp       # Format Burp
+$ python3 main.py -d example.com -o report.html      # HTML
 
-![Installer Output](/images/image-3.png)
+# Gunakan template HTML kustom
+$ python3 main.py -d example.com -o out.html --html-template templates/report.html.j2
 
-### Scan Multiple Domains
+# Input daftar domain
+$ python3 main.py -i list.txt -o output-%d.json
 
-```bash
-$ python recon_engine.py -i domains.txt
-```
-
-### Output to File
-
-```bash
-$ python recon_engine.py -d example.com -o results/example.json
-```
-
-### List Available Plugins
-
-```bash
-$ python recon_engine.py --list-plugins
-```
-
-### Select or Exclude Plugins
-
-```bash
-$ python recon_engine.py -d example.com --use-plugins subfinder,findomain
-$ python recon_engine.py -d example.com --exclude-plugins hackertarget
+# Lihat plugin yang tersedia
+$ python3 main.py --list-plugins
 ```
 
 ---
 
-## 📂 Output
+## 📦 Format Output
 
-Results are stored in your chosen format and path, with optional `%d` placeholder for domain names.
-
-* `.txt` : Simple newline list
-* `.json` : Structured JSON
-* `.csv` : With headers for integration
+| Format   | Tujuan                          | Ekstensi |
+| -------- | ------------------------------- | -------- |
+| `.txt`   | Daftar subdomain biasa          | `.txt`   |
+| `.csv`   | Kompatibel dengan Excel/Sheets  | `.csv`   |
+| `.json`  | Parsing otomatis oleh tools     | `.json`  |
+| `.gnmap` | Import ke Nmap (-iL)            | `.gnmap` |
+| `.burp`  | Scope Burp Suite (Target Scope) | `.burp`  |
+| `.html`  | Laporan visual profesional      | `.html`  |
 
 ---
 
-## 📁 Project Structure
+## 🔌 Membuat Plugin
 
+### Plugin API
+
+```python
+# plugins/api/example_api.py
+class Plugin:
+    def __init__(self):
+        self.name = "Example API"
+        self.url = "https://api.example.com/find?domain={domain}"
+        # self.api_key_env = "EXAMPLE_API_KEY"  # Opsional
+
+    def parse(self, data):
+        subdomains = set()
+        # ... parsing logic ...
+        return subdomains
 ```
-Recon-Engine/
-├── recon_engine.py      # Main engine
-├── plugins/             # Plugin folders
-│   ├── api/
-│   └── tools/
-├── ui/
-│   └── live_progress.py
-├── requirements.txt
-└── README.md
+
+### Plugin Tool
+
+```python
+# plugins/tools/example_tool.py
+class Plugin:
+    def __init__(self):
+        self.name = "exampletool"
+
+    def get_command(self, domain):
+        return [self.name, "-d", domain, "--silent"]
 ```
 
----
+## 📬 Kontribusi & Dukungan
 
-## 📄 License
-
-MIT License - see [LICENSE](./LICENSE)
-
----
-
-## 🤝 Contributing
-
-Coming soon! Plugin contributions are welcome in `plugins/tools/` or `plugins/api/`.
+* 💬 Diskusi & pertanyaan: [GitHub Discussions](https://github.com/user/recon-engine/discussions)
+* 🐛 Laporkan bug: [Issues](https://github.com/user/recon-engine/issues)
+* ⭐ Beri bintang jika proyek ini bermanfaat!
 
 ---
 
-## 👨‍💻 Author
+## ⚖️ Lisensi
 
-**Haza-3301**
-Bug bounty hunter & Python toolsmith
-GitHub: [@Haza-3301](https://github.com/Haza-3301)
-
----
-
-## 🧠 Disclaimer
-
-This tool is intended for **authorized security testing** and **educational purposes** only.
-Misuse of this tool is strictly prohibited.
-
----
-
-## 🌐 Stay Updated
-
-Follow the project or watch the repo to get updates when new versions or plugins are released!
+Recon Engine dirilis di bawah [MIT License](LICENSE).
