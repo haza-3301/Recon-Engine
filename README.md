@@ -154,3 +154,5 @@ class Plugin:
 ## ⚖️ Lisensi
 
 Recon Engine dirilis di bawah [MIT License](LICENSE).
+
+**Full Changelog**: https://github.com/haza-3301/Recon-Engine/commits/v8.0.0
