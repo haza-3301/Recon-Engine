@@ -1,4 +1,4 @@
-# Recon Engine v8.0 🚀
+# Recon Engine v8.0.0 🚀
 
 &#x20;&#x20;
 
