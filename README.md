@@ -1,4 +1,10 @@
-# Recon Engine v8.0.0 🚀
+# Recon Engine v8.0.0 🚀 
+
+[![Last Commit](https://img.shields.io/github/last-commit/haza-3301/Recon-Engine)](https://github.com/haza-3301/Recon-Engine/commits/main) [![Issues](https://img.shields.io/github/issues/haza-3301/Recon-Engine)](https://github.com/haza-3301/Recon-Engine/issues)
+
+[![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/downloads/) [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) 
+
+[![Release](https://img.shields.io/github/v/release/haza-3301/Recon-Engine?color=orange)](https://github.com/haza-3301/Recon-Engine/releases) [![Stars](https://img.shields.io/github/stars/haza-3301/Recon-Engine?style=social)](https://github.com/haza-3301/Recon-Engine)
 
 &#x20;&#x20;
 
