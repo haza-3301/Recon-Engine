@@ -33,6 +33,7 @@ class LiveProgressManager:
             "FAILED": "[red]❌ FAILED[/]",
             "TIMEOUT": "[red]⏰ TIMEOUT[/]",
             "CACHED": "[blue]💾 CACHED[/]",
+            "SKIPPED": "[dim]SKIPPED[/]",
         }
 
         for name, data in sorted(self.plugins_status.items()):

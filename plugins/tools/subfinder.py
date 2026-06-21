@@ -1,10 +1,13 @@
-# plugins/tools/subfinder.py
-class Plugin:
-    """Plugin untuk tool subfinder."""
+from typing import List
+
+from core.base_plugin import BaseToolPlugin
+
+
+class Plugin(BaseToolPlugin):
+    """ProjectDiscovery subfinder."""
 
     def __init__(self):
         self.name = "subfinder"
-        self.output_flag = "-o"  # Subfinder menggunakan flag output
 
-    def get_command(self, domain):
+    def get_command(self, domain: str) -> List[str]:
         return ["subfinder", "-d", domain, "-silent"]

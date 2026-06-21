@@ -56,12 +56,63 @@ import subprocess
 import shutil
 from pathlib import Path
 
+from core.paths import REPO_ROOT
+
 console = Console()
-TOOLS_DIR = Path("tools_bin")
+TOOLS_DIR = REPO_ROOT / "tools_bin"
 
 @click.group()
 def cli():
     pass
+
+def sync_tools_from_dir(src_root: Path):
+    """Copy PD binaries from an external directory into tools_bin/."""
+    TOOLS_DIR.mkdir(parents=True, exist_ok=True)
+    pairs = [("httpx", "pd-httpx"), ("dnsx", "dnsx")]
+    for src_name, dst_name in pairs:
+        src = src_root / src_name
+        dst = TOOLS_DIR / dst_name
+        if not src.is_file():
+            raise FileNotFoundError(f"Tidak ditemukan: {src}")
+        shutil.copy2(src, dst)
+        dst.chmod(0o755)
+        console.print(f"[green]✔[/] {src} → {dst}")
+
+
+def ensure_pd_binaries():
+    """Download pd-httpx & dnsx from GitHub if not already in tools_bin/."""
+    if (TOOLS_DIR / "pd-httpx").is_file() and (TOOLS_DIR / "dnsx").is_file():
+        return
+    console.print("[yellow]Mengunduh pd-httpx & dnsx ke tools_bin/...[/]")
+    install_zip_binary(
+        "pd-httpx",
+        "https://github.com/projectdiscovery/httpx/releases/latest/download/httpx_linux_amd64.zip",
+    )
+    install_zip_binary(
+        "dnsx",
+        "https://github.com/projectdiscovery/dnsx/releases/latest/download/dnsx_linux_amd64.zip",
+    )
+
+
+@cli.command("sync-tools")
+@click.argument("source_dir", required=False, type=click.Path(exists=True, file_okay=False))
+def sync_tools_cmd(source_dir):
+    """
+    Salin pd-httpx & dnsx ke tools_bin/ dari direktori sumber.
+
+    Gunakan argumen path, atau set env HEPH_TOOLS=/path/to/bin
+    """
+    try:
+        src = Path(source_dir) if source_dir else Path(os.environ["HEPH_TOOLS"])
+        sync_tools_from_dir(src)
+        console.print("[bold green]Sync tools_bin selesai.[/]")
+    except KeyError:
+        console.print("[bold red]Berikan path argumen atau set HEPH_TOOLS=/path/to/bin[/]")
+        sys.exit(1)
+    except Exception as e:
+        console.print(f"[bold red]Gagal:[/] {e}")
+        sys.exit(1)
+
 
 @cli.command()
 def install():
@@ -81,6 +132,7 @@ def install():
         ("Memeriksa alat sistem dasar", lambda: check_tools(["curl", "wget", "unzip", "git"])),
         ("Memeriksa Golang", check_golang),
         ("Menginstal dependensi Python", check_python_dependencies),
+        ("Sync binary PD (pd-httpx, dnsx)", ensure_pd_binaries),
         ("Menginstal tools eksternal", install_tools),
         ("Menambahkan PATH ke shell config", update_shell_path),
     ]
@@ -89,7 +141,7 @@ def install():
         run_with_spinner(message, task)
 
     layout.add_row(Panel.fit(
-        "[bold green]🚀 Instalasi selesai! Jalankan dengan:[/]\n[bold yellow]   python recon_engine_v6.py[/]",
+        "[bold green]🚀 Instalasi selesai![/]\n[bold yellow]   python recon.py example.com -t 300[/]",
         border_style="green",
     ))
 
@@ -153,6 +205,32 @@ def check_python_dependencies():
     result = subprocess.run(["pip", "install", "-r", "requirements.txt"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     if result.returncode != 0:
         raise RuntimeError("Gagal menginstal dependensi Python")
+
+def install_zip_binary(name, url):
+    """Download PD release zip and extract single binary into tools_bin."""
+    import tempfile
+    import zipfile
+
+    bin_path = TOOLS_DIR / name
+    if bin_path.exists():
+        return
+
+    TOOLS_DIR.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory() as tmp:
+        zip_path = Path(tmp) / "tool.zip"
+        result = subprocess.run(["curl", "-sL", "-o", str(zip_path), url], check=False)
+        if result.returncode != 0 or not zip_path.exists():
+            raise RuntimeError(f"Gagal mengunduh {name} dari {url}")
+        with zipfile.ZipFile(zip_path) as zf:
+            members = [m for m in zf.namelist() if not m.endswith("/")]
+            if not members:
+                raise RuntimeError(f"Arsip zip {name} kosong")
+            extracted = Path(tmp) / Path(members[0]).name
+            zf.extract(members[0], tmp)
+            src = Path(tmp) / members[0]
+            shutil.copy(src, bin_path)
+        bin_path.chmod(0o755)
+
 
 def install_tools():
     TOOLS_DIR.mkdir(exist_ok=True)

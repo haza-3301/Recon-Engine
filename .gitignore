@@ -201,7 +201,15 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
-# Marimo
-marimo/_static/
-marimo/_lsp/
-__marimo__/
+# Bundled PD binaries (~100MB) — sync via install.py install
+tools_bin/pd-httpx
+tools_bin/dnsx
+!tools_bin/README.md
+
+# Run output & local test artifacts
+recon.txt
+enum-only.txt
+evidence/
+padang.go.id/
+bojonegorokab.go.id/
+tangerangkota.go.id/

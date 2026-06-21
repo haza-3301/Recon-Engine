@@ -1,28 +1,25 @@
-# plugins/api/crtsh.py
 import logging
+from typing import Any, Set
+
+from core.base_plugin import BaseAPIPlugin
 
 
-class Plugin:
-    """Plugin untuk mengambil data subdomain dari crt.sh."""
+class Plugin(BaseAPIPlugin):
+    """Certificate transparency via crt.sh."""
 
     def __init__(self):
         self.name = "crt.sh"
         self.url = "https://crt.sh/?q=%.{domain}&output=json"
 
-    def parse(self, data):
-        """Parser khusus untuk output JSON dari crt.sh."""
+    def parse(self, data: Any) -> Set[str]:
         if not isinstance(data, list):
-            logging.warning(
-                f"[{self.name}] Respons API bukan list, parsing dibatalkan."
-            )
+            logging.warning(f"[{self.name}] Respons API bukan list, parsing dibatalkan.")
             return set()
 
-        subdomains = set()
+        subdomains: Set[str] = set()
         for entry in data:
             if "name_value" in entry:
                 subdomains.update(
-                    name.strip()
-                    for name in entry["name_value"].split("\n")
-                    if name.strip()
+                    name.strip() for name in entry["name_value"].split("\n") if name.strip()
                 )
         return subdomains

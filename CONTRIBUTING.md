@@ -7,17 +7,22 @@ Panduan ini WAJIB diikuti oleh seluruh kontributor pada proyek ini untuk menjaga
 ## 1. Struktur Plugin
 
 ### Plugin API (`plugins/api/`)
-- Harus memiliki `class Plugin` dengan atribut: `name`, `url`, serta method `parse`.
+- Harus memiliki `class Plugin` yang **mewarisi** `BaseAPIPlugin` dari `core/base_plugin.py`.
+- Atribut wajib: `name`, `url`, method `parse(data) -> set`.
+- Opsional: `is_json=False` (plain text), `api_key_env` atau `api_key` untuk auth.
 - Tidak boleh menggunakan `eval`, `exec`, atau dynamic import.
 - Parsing defensif: selalu cek tipe dan struktur data sebelum diproses.
-- Tidak menerima input selain dari core engine (domain yang tervalidasi).
 - **Contoh:**
     ```python
-    class Plugin:
-        name = "Example"
-        url = "https://api.example.com/{domain}"
+    from typing import Any, Set
+    from core.base_plugin import BaseAPIPlugin
 
-        def parse(self, data):
+    class Plugin(BaseAPIPlugin):
+        def __init__(self):
+            self.name = "Example"
+            self.url = "https://api.example.com/{domain}"
+
+        def parse(self, data: Any) -> Set[str]:
             if not isinstance(data, dict) or "subdomains" not in data:
                 logging.warning(f"[{self.name}] Response tidak valid.")
                 return set()
@@ -25,16 +30,21 @@ Panduan ini WAJIB diikuti oleh seluruh kontributor pada proyek ini untuk menjaga
     ```
 
 ### Plugin Tools (`plugins/tools/`)
-- Harus memiliki `class Plugin` dengan atribut: `name`, dan method `get_command`.
+- Harus memiliki `class Plugin` yang **mewarisi** `BaseToolPlugin`.
+- Atribut wajib: `name`, method `get_command(domain) -> list`.
 - Method `get_command` harus mengembalikan **list** (bukan string) untuk subprocess.
 - Tidak boleh menggunakan `shell=True` pada subprocess.
 - Tidak menerima flag dinamis dari user tanpa validasi.
 - **Contoh:**
     ```python
-    class Plugin:
-        name = "ToolX"
+    from typing import List
+    from core.base_plugin import BaseToolPlugin
 
-        def get_command(self, domain):
+    class Plugin(BaseToolPlugin):
+        def __init__(self):
+            self.name = "toolx"
+
+        def get_command(self, domain: str) -> List[str]:
             return ["toolx", "-d", domain]
     ```
 
@@ -61,6 +71,7 @@ Panduan ini WAJIB diikuti oleh seluruh kontributor pada proyek ini untuk menjaga
 
 ## 4. Testing
 
+- Jalankan: `pytest plugins/tests -v` dan `python3 main.py --lint-plugins`
 - Tulis unit test untuk fungsi parsing plugin API (kasus valid & invalid).
 - Pastikan plugin tool hanya menjalankan command yang sudah tervalidasi.
 

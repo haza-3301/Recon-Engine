@@ -2,165 +2,189 @@
 
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 ![License](https://img.shields.io/github/license/haza-3301/Recon-Engine)
-![Last Commit](https://img.shields.io/github/last-commit/haza-3301/Recon-Engine)
-<!-- Tambahkan badge CI jika sudah ada workflow -->
+![Version](https://img.shields.io/badge/version-9.0.0-green)
 
-> **Recon-Engine** adalah framework modular dan asinkron untuk enumerasi subdomain, dirancang untuk bug bounty hunter, pentester, dan siapa saja yang membutuhkan proses reconnaissance domain yang cepat, fleksibel, dan extensible.
-
----
-
-## 🚀 Fitur Utama
-
-- **Modular & Extensible:** Mudah menambah plugin baru (API/tool eksternal) tanpa modifikasi core.
-- **Asynchronous:** Semua task berjalan secara paralel untuk performa maksimal.
-- **Live Progress CLI:** Tampilkan progress secara real-time di terminal.
-- **Output Multi-format:** Dukungan output ke TXT, CSV, JSON, dan HTML.
-- **Encrypted Caching:** Cache terenkripsi untuk hasil scanning dan API key.
-- **Validasi Domain Otomatis:** Filter domain valid secara otomatis.
-- **Plugin System:** Pilihan plugin API & tool populer siap pakai.
+> Framework modular dan asinkron untuk enumerasi subdomain — dirancang untuk bug bounty, pentest, dan recon cepat.
 
 ---
 
-## 📦 Instalasi
+## Fitur Utama
 
-### 1. Clone & Masuk Direktori
+- **Modular & extensible** — plugin API dan CLI tool tanpa mengubah core
+- **Asynchronous** — semua sumber data berjalan paralel (`asyncio` + `httpx`)
+- **Live progress CLI** — tabel status real-time (`rich`)
+- **Output multi-format** — TXT, CSV, JSON, Burp, Nmap gnmap, HTML
+- **Result cache** — JSON + SHA256 checksum + file lock (bukan enkripsi)
+- **Validasi domain** — filter otomatis + dukungan IDN/Punycode
+- **Typed plugin contract** — `BaseAPIPlugin` / `BaseToolPlugin` (v9)
+
+---
+
+## Instalasi
 
 ```bash
 git clone https://github.com/haza-3301/Recon-Engine.git
 cd Recon-Engine
-```
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
 
-### 2. Aktifkan Virtualenv (Opsional, Disarankan)
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### 3. Install Awal
-
-```bash
+# Opsional: installer tools eksternal (subfinder, findomain, dll.)
 python install.py install
 ```
 
 ---
 
-## 🏁 Langkah Kilat Pemakaian
+## Pemakaian
 
 ```bash
-# Contoh menjalankan Recon-Engine pada satu domain
-python3 main.py -d example.com -t 60 -o hasil.txt
+# Default: full pipeline → recon.txt (satu file, tanpa artefak perantara)
+python3 recon.py padang.go.id -t 300
 
-# Opsi lain:
-#   -l domains.txt      # input dari file
-#   --resolve-ip        # resolusi domain ke IP
-#   --asn-lookup        # lookup ASN
-#   -o hasil.json       # output format berbeda
+# Output ke path lain
+python3 recon.py padang.go.id -t 300 -o hasil/recon.txt
+
+# Live hostnames saja (enum + filter + dnsx + httpx probe, tanpa fingerprint)
+python3 recon.py padang.go.id -t 300 --enum-only
+```
+
+| Mode | Pipeline | Isi `recon.txt` |
+|------|----------|-----------------|
+| **default** | enum → filter → dnsx → httpx (fingerprint) | URL + status, title, IP — **tanpa [FAILED]** |
+| **`--enum-only`** | enum → filter → dnsx → httpx (`-silent`) | Hostname live bersih |
+
+Tidak ada `raw.txt`, `subs.txt`, `dnsx.txt`, atau `live.txt` di disk — semua stage di memory.
+
+---
+
+## Binary (`tools_bin/`)
+
+Portable — path relatif root repo, tanpa hardcode user/direktori lokal.
+
+| File | Fungsi |
+|------|--------|
+| `pd-httpx` | ProjectDiscovery httpx |
+| `dnsx` | ProjectDiscovery dnsx |
+
+```bash
+python3 install.py install          # unduh dari GitHub ke tools_bin/
+python3 recon.py example.com --show-tools
+
+# Opsional: salin dari direktori Anda sendiri
+python3 install.py sync-tools /path/to/bin
 ```
 
 ---
 
-## 🏗️ Arsitektur & Alur Kerja
+## Arsitektur v9
 
 ```
-Input → Loader Plugin → Eksekusi Async → Validasi & Resolusi → Output Writer → Laporan
+main.py (CLI)
+    │
+    ├── core/config.py        ReconConfig (dataclass)
+    ├── core/cache.py         CacheManager
+    ├── core/orchestrator.py  ReconOrchestrator — async plugin runner
+    ├── core/plugin_loader.py Discovery + lint
+    ├── core/base_plugin.py   BaseAPIPlugin / BaseToolPlugin
+    ├── core/output_writer.py Multi-format export
+    └── plugins/
+            ├── api/          HTTP sources
+            └── tools/        CLI wrappers
 ```
 
-Recon-Engine memproses input domain/daftar domain, memanggil plugin (API/tools), melakukan validasi & resolusi, lalu menulis output. Plugin bisa ditambahkan tanpa mengubah core engine.
+**Alur:**
 
----
-
-## 🧩 Daftar Plugin Bawaan
-
-| Plugin         | Tipe   | Sumber Data/API        | Deskripsi               |
-|----------------|--------|------------------------|-------------------------|
-| subfinder      | Tools  | ProjectDiscovery       | Subdomain enumeration   |
-| crtsh          | API    | crt.sh                 | Certificate transparency|
-| dnsdumpster    | API    | dnsdumpster.com        | DNS reconnaissance     |
-| ...            | ...    | ...                    | ...                     |
-
-> Lihat folder `plugins/` untuk daftar plugin lengkap dan cara menambah plugin baru.
-
----
-
-## ⚙️ Cara Menambah Plugin
-
-1. Buat file plugin di folder `plugins/` (lihat contoh di `plugins/`).
-2. Implementasikan class sesuai template plugin.
-3. Daftarkan plugin pada `plugins/__init__.py` jika perlu.
-4. Jalankan ulang Recon-Engine.
-
----
-
-## 📥 Contoh Output
-
-### Output Recon-Engine
-![Contoh Output HTML](images/image-1.png)
-
-### Output JSON
-```json
-[
-  {
-    "domain": "sub.example.com",
-    "ip": "1.2.3.4",
-    "source": "crtsh"
-  }
-]
+```
+Input domain → load plugins → [cache hit?] → ReconOrchestrator.gather()
+    → validasi & dedup → [resolve IP / ASN] → write_output → cache write
 ```
 
 ---
 
-## ❓ FAQ
+## Plugin Bawaan
 
-**Q: Kenapa hasil scan kosong?**  
-A: Pastikan koneksi internet stabil & plugin aktif.
-
-**Q: Error saat install dependensi?**  
-A: Gunakan Python 3.8+, upgrade pip ke versi terbaru.
-
-**Q: Bagaimana menambah plugin baru?**  
-A: Lihat panduan “Cara Menambah Plugin” di atas.
-
----
-
-## 📑 Dokumentasi Lengkap
-
-- [Dokumentasi Plugin](docs/plugins.md)
-- [API Reference](docs/api.md)
-- [Changelog](https://github.com/haza-3301/Recon-Engine/commits/main)
+| Plugin | Tipe | Sumber | Catatan |
+|--------|------|--------|---------|
+| crt.sh | API | Certificate transparency | — |
+| CertSpotter | API | certspotter.com | — |
+| AlienVault OTX | API | Passive DNS | — |
+| HackerTarget | API | hostsearch | Plain text (`is_json=False`) |
+| Chaos | API | ProjectDiscovery | Env `CHAOS_KEY` |
+| subfinder | Tool | ProjectDiscovery | PATH / `tools_bin/` |
+| assetfinder | Tool | tomnomnom | Go binary |
+| findomain | Tool | Findomain | Binary |
+| Wayback | Built-in | web.archive.org | Flag `--wayback` |
 
 ---
 
-## 🤝 Kontribusi
+## Menambah Plugin
 
-Kontribusi sangat terbuka!  
-1. Fork repo ini.
-2. Buat branch baru untuk fitur/bug.
-3. Pull request dengan detail perubahan.
+### API (`plugins/api/myplugin.py`)
 
-Baca [CONTRIBUTING.md](CONTRIBUTING.md) untuk panduan kontribusi lebih lanjut.
+```python
+from typing import Any, Set
+from core.base_plugin import BaseAPIPlugin
+
+class Plugin(BaseAPIPlugin):
+    def __init__(self):
+        self.name = "My API"
+        self.url = "https://api.example.com/subdomains/{domain}"
+        self.api_key_env = "MY_API_KEY"  # opsional
+
+    def parse(self, data: Any) -> Set[str]:
+        if not isinstance(data, dict):
+            return set()
+        return set(data.get("hosts", []))
+```
+
+### Tool (`plugins/tools/mytool.py`)
+
+```python
+from typing import List
+from core.base_plugin import BaseToolPlugin
+
+class Plugin(BaseToolPlugin):
+    def __init__(self):
+        self.name = "mytool"
+
+    def get_command(self, domain: str) -> List[str]:
+        return ["mytool", "-d", domain]
+```
+
+Validasi: `python3 main.py --lint-plugins`
 
 ---
 
-## 👥 Kontributor
+## Output
 
-| Nama      | Github ID    |
-|-----------|--------------|
-| haza-3301 | @haza-3301   |
-| ...       | ...          |
-
----
-
-## 📫 Kontak & Dukungan
-
-- Diskusi & pertanyaan: [GitHub Discussions](https://github.com/haza-3301/Recon-Engine/discussions)
-- Laporkan bug: [Issues](https://github.com/haza-3301/Recon-Engine/issues)
-- Email: your@email.com
+| Format | Flag | Isi |
+|--------|------|-----|
+| `.txt` | `-o out.txt` | Subdomain (+ IP/ASN) |
+| `.json` | `-o out.json` | Nested dict |
+| `.csv` | `-o out.csv` | subdomain, ip, asn, org |
+| `.burp` | `-o out.burp` | Hostname list |
+| `.gnmap` | `-o out.gnmap` | Nmap target list |
+| `.html` | `-o out.html` | Laporan Jinja2 |
 
 ---
 
-## ⚠️ Lisensi
+## Pengembangan
 
-MIT License. Lihat [LICENSE](LICENSE) untuk detail.
+```bash
+pip install -r requirements.txt
+pytest plugins/tests -v
+python3 main.py --lint-plugins
+```
+
+Struktur test: `plugins/tests/`
 
 ---
+
+## Kontribusi
+
+Lihat [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+## Lisensi
+
+MIT — lihat [LICENSE](LICENSE).
